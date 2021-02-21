@@ -47,11 +47,12 @@ public class Controller {
 
         receiver.setOnAction(event -> {
             readMatrix();
-            //суй свой классж
+            //суй свой класс
             Requestable req=new ...;
             req.setSize(size.get());
             req.setPreparedMatrix(matrix.get());
             writeMatrix(req.getFinalMatrix());
+            // Думаю, можно тут добавить один метод для всего этого счастья
             Console.writeLine(consoleArea,req.getMessage());
             Console.writeRVector(consoleArea,req.getAnswers());
             Console.writeRVector(consoleArea,req.getDiscrepancy());
