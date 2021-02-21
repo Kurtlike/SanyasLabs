@@ -56,6 +56,7 @@ public class Controller {
             Console.writeLine(consoleArea,req.getMessage());
             Console.writeRVector(consoleArea,req.getAnswers());
             Console.writeRVector(consoleArea,req.getDiscrepancy());
+            //
         });
     }
     private ArrayList<Node> createHideArr(){
