@@ -48,9 +48,10 @@ public class Controller {
         receiver.setOnAction(event -> {
             readMatrix();
             //суй свой класс
-            Requestable req=new ...;
+            Requestable req=new Request();
             req.setSize(size.get());
             req.setPreparedMatrix(matrix.get());
+            req.ebash();
             writeMatrix(req.getFinalMatrix());
             // Думаю, можно тут добавить один метод для всего этого счастья
             Console.writeLine(consoleArea,req.getMessage());
