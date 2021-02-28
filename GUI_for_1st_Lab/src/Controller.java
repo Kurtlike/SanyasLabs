@@ -55,7 +55,7 @@ public class Controller {
             writeMatrix(req.getFinalMatrix());
             // Думаю, можно тут добавить один метод для всего этого счастья
             Console.writeLine(consoleArea,req.getMessage());
-            Console.writeRVector(consoleArea,req.getAnswers());
+            Console.writeXVector(consoleArea,req.getAnswers());
             Console.writeRVector(consoleArea,req.getDiscrepancy());
             //
         });
