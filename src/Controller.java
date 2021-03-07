@@ -1,3 +1,11 @@
+import java.io.FileReader;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.ResourceBundle;
+import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
 import File.FileData;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -11,31 +19,25 @@ import panels.Console;
 import panels.InputTextFields;
 import panels.TableOperator;
 
-import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.Scanner;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-
 public class Controller {
+    private Pane workPlace=new Pane();
+    @FXML
+    private  GridPane table=new GridPane();
+    @FXML
+    private  TextField nValue=new TextField();
+    @FXML
+    private  Button receiver=new Button();
+    @FXML
+    private  TextArea consoleArea=new TextArea();
+    @FXML
+    private  TextField fileAddress=new TextField();
+    @FXML
+    private Button matrixIn=new Button();
+    @FXML
+    private Button changeIn=new Button();
     AtomicInteger size = new AtomicInteger();
     AtomicReference<ArrayList<Double>> matrix = new AtomicReference<>(new ArrayList<>());
     String address;
-    private Pane workPlace = new Pane();
-    @FXML
-    private GridPane table = new GridPane();
-    @FXML
-    private TextField nValue = new TextField();
-    @FXML
-    private Button receiver = new Button();
-    @FXML
-    private TextArea consoleArea = new TextArea();
-    @FXML
-    private TextField fileAddress = new TextField();
-    @FXML
-    private Button matrixIn = new Button();
-    @FXML
-    private Button changeIn = new Button();
 
     @FXML
     void initialize() {
@@ -45,20 +47,18 @@ public class Controller {
 
         receiver.setOnAction(event -> {
             readMatrix();
-            //суй свой класс
-            Requestable req = new ...;
+            Requestable req = new Request();
             req.setSize(size.get());
             req.setPreparedMatrix(matrix.get());
+            req.ebash();
             writeMatrix(req.getFinalMatrix());
-            // Думаю, можно тут добавить один метод для всего этого счастья
-            Console.writeLine(consoleArea, req.getMessage());
-            Console.writeXVector(consoleArea, req.getAnswers());
-            Console.writeRVector(consoleArea, req.getDiscrepancy());
+            Console.writeLine(consoleArea,req.getMessage());
+            Console.writeXVector(consoleArea,req.getAnswers());
+            Console.writeRVector(consoleArea,req.getDiscrepancy());
             //
         });
     }
-
-    private ArrayList<Node> createHideArr() {
+    private ArrayList<Node> createHideArr(){
         ArrayList<Node> arr = new ArrayList<>();
         arr.add(fileAddress);
         arr.add(consoleArea);
@@ -68,44 +68,39 @@ public class Controller {
         arr.add(changeIn);
         return arr;
     }
-
-    private void changeInput() {
+    private void changeInput(){
         changeIn.setOnAction(event -> {
             selectInput();
         });
     }
-
-    private void setData() {
+    private void setData(){
         matrixIn.setOnAction(event -> {
-            if (fileAddress.isVisible()) readFromFile();
-            if (nValue.isVisible()) readSize();
+            if(fileAddress.isVisible()) readFromFile();
+            if(nValue.isVisible()) readSize();
         });
     }
-
-    private void readFromFile() {
+    private void readFromFile(){
         readAddress();
         try {
             FileReader fw = new FileReader(InputTextFields.getStringFromTextField(fileAddress));
             Scanner scanner = new Scanner(fw);
             size.set(Integer.parseInt(scanner.nextLine()));
-            matrix.set(FileData.readFile(scanner, size.get()));
+            matrix.set(FileData.readFile(scanner,size.get()));
             scanner.close();
             fw.close();
-            TableOperator.createTable(table, size.get());
+            TableOperator.createTable(table,size.get());
             writeMatrix(matrix.get());
         } catch (Exception e) {
-            Console.writeLine(consoleArea, e.getMessage());
+            Console.writeLine(consoleArea,e.getMessage());
         }
     }
-
-    private void selectInput() {
+    private void selectInput(){
         ArrayList<Node> needToHide = createHideArr();
         Choice.hideInterfaces(needToHide);
         Choice.select(table);
-        selectInputMethod((Button) table.getChildren().get(0), (Button) table.getChildren().get(1));
+        selectInputMethod((Button) table.getChildren().get(0),(Button) table.getChildren().get(1));
     }
-
-    private void selectInputMethod(Button setManual, Button setFromFile) {
+    private void selectInputMethod(Button setManual, Button setFromFile){
         setManual.setOnAction(event -> {
             TableOperator.clearTable(table);
             nValue.setVisible(true);
@@ -123,40 +118,41 @@ public class Controller {
             matrixIn.setVisible(true);
         });
     }
-
-    private void readSize() {
+    private void readSize(){
         try {
-            int a = InputTextFields.getIntFromTextField(nValue);
-            if (a > 0 && a < 21) {
+            int a=InputTextFields.getIntFromTextField(nValue);
+            if(a>0&&a<21) {
                 size.set(a);
-                TableOperator.createTable(table, size.get());
-            } else {
+                TableOperator.createTable(table,size.get());
+            }
+            else {
                 throw new NumberFormatException();
             }
-        } catch (NumberFormatException e) {
-            Console.writeLine(consoleArea, "Размер введен некорректно\n" +
+        }
+        catch (NumberFormatException e){
+            Console.writeLine(consoleArea,"Размер введен некорректно\n" +
                     "Введите число от 1 до 20 включительно \n");
         }
 
     }
-
-    private void readAddress() {
+    private void readAddress(){
         address = InputTextFields.getStringFromTextField(fileAddress);
     }
-
-    private void readMatrix() {
+    private void readMatrix(){
         try {
-            matrix.set(TableOperator.readTable(table, size.get()));
-        } catch (Exception e) {
-            Console.writeLine(consoleArea, e.getMessage() + "\n");
+            matrix.set(TableOperator.readTable(table,size.get()));
+        }
+        catch (Exception e){
+            Console.writeLine(consoleArea,e.getMessage()+"\n");
         }
     }
 
     private void writeMatrix(ArrayList<Double> matrix) {
         try {
-            TableOperator.printTable(matrix, table, size.get());
-        } catch (Exception e) {
-            Console.writeLine(consoleArea, e.getMessage() + "\n");
+            TableOperator.printTable(matrix,table,size.get());
+        }
+        catch (Exception e){
+            Console.writeLine(consoleArea,e.getMessage()+"\n");
         }
     }
 }
