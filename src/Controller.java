@@ -5,82 +5,107 @@ import java.util.ResourceBundle;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import File.FileData;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
-import panels.Choice;
-import panels.Console;
-import panels.InputTextFields;
-import panels.TableOperator;
+import panels.*;
 
 public class Controller {
-    private Pane workPlace=new Pane();
-    @FXML
-    private  GridPane table=new GridPane();
-    @FXML
-    private  TextField nValue=new TextField();
-    @FXML
-    private  Button receiver=new Button();
-    @FXML
-    private  TextArea consoleArea=new TextArea();
-    @FXML
-    private  TextField fileAddress=new TextField();
-    @FXML
-    private Button matrixIn=new Button();
-    @FXML
-    private Button changeIn=new Button();
     AtomicInteger size = new AtomicInteger();
-    AtomicReference<ArrayList<Double>> matrix = new AtomicReference<>(new ArrayList<>());
-    String address;
+    AtomicReference<ArrayList<Double>> matrix= new AtomicReference<>(new ArrayList<>());
+    @FXML
+    private Pane tablesPane=new Pane();
+    @FXML
+    private  TextField nValue = new TextField();
+    @FXML
+    private  Button receiver = new Button();
+    @FXML
+    private  TextArea consoleArea = new TextArea();
+    @FXML
+    private  TextField fileAddress = new TextField();
+    @FXML
+    private Button matrixIn = new Button();
+    @FXML
+    private Button changeIn = new Button();
+    @FXML
+    private Pane workPlace = new Pane();
+    @FXML
+    private Button nextIter=new Button();
+
+    @FXML
+    private CheckBox iterMode=new CheckBox();
 
     @FXML
     void initialize() {
-        selectInput();
+        createChooseInput();
         changeInput();
-        setData();
-
+        TablesPane pane = new TablesPane(tablesPane);
+        input(pane);
         receiver.setOnAction(event -> {
-            readMatrix();
-            Requestable req = new Request();
+            matrix.set(TableOperator.readTable((GridPane) tablesPane.getChildren().get(0), size.get()));
+            Requestable req = new Test();
             req.setSize(size.get());
-            req.setPreparedMatrix(matrix.get());
-            req.ebash();
-            writeMatrix(req.getFinalMatrix());
-            Console.writeLine(consoleArea,req.getMessage());
-            Console.writeXVector(consoleArea,req.getAnswers());
-            Console.writeRVector(consoleArea,req.getDiscrepancy());
-            //
+            if(iterMode.isSelected()) {
+                nextIter.setVisible(true);
+                nextIter.setOnAction(event1 -> {
+                   GridPane gridPane = pane.createNewTable(size.get());
+                   req.setPreparedMatrix(matrix.get());
+                   TableOperator.printTable(req.getNextMatrix(),gridPane,size.get());
+
+                });
+            }
+            else {
+                req.setPreparedMatrix(matrix.get());
+                GridPane gridPane = pane.createNewTable(size.get());
+                TableOperator.printTable(req.getFinalMatrix(),gridPane,size.get());
+            }
         });
     }
-    private ArrayList<Node> createHideArr(){
-        ArrayList<Node> arr = new ArrayList<>();
-        arr.add(fileAddress);
-        arr.add(consoleArea);
-        arr.add(receiver);
-        arr.add(nValue);
-        arr.add(matrixIn);
-        arr.add(changeIn);
-        return arr;
+    private void createChooseInput(){
+        Button manually = new Button("вручную");
+        Button fromFile = new Button("Из файла");
+        manually.setMinSize(480, 550);
+        fromFile.setMinSize(480, 550);
+        fromFile.setLayoutX(480);
+        workPlace.getChildren().addAll(manually, fromFile);
+        manually.setOnAction(event -> {
+            fileAddress.setVisible(false);
+            workPlace.getChildren().remove(manually);
+            workPlace.getChildren().remove(fromFile);
+        });
+        fromFile.setOnAction(event -> {
+            nValue.setVisible(false);
+            workPlace.getChildren().remove(manually);
+            workPlace.getChildren().remove(fromFile);
+        });
     }
     private void changeInput(){
         changeIn.setOnAction(event -> {
-            selectInput();
+            nValue.setVisible(true);
+            fileAddress.setVisible(true);
+            createChooseInput();
         });
     }
-    private void setData(){
+    private void input(TablesPane pane){
         matrixIn.setOnAction(event -> {
-            if(fileAddress.isVisible()) readFromFile();
-            if(nValue.isVisible()) readSize();
+            if(fileAddress.isVisible()){
+                readFromFile();
+                pane.createNewTable(size.get());
+                TableOperator.createTable((GridPane) tablesPane.getChildren().get(0), size.get());
+            }
+            else {
+                readSize();
+                pane.createNewTable(size.get());
+            }
         });
     }
     private void readFromFile(){
-        readAddress();
         try {
             FileReader fw = new FileReader(InputTextFields.getStringFromTextField(fileAddress));
             Scanner scanner = new Scanner(fw);
@@ -88,42 +113,16 @@ public class Controller {
             matrix.set(FileData.readFile(scanner,size.get()));
             scanner.close();
             fw.close();
-            TableOperator.createTable(table,size.get());
-            writeMatrix(matrix.get());
+
         } catch (Exception e) {
             Console.writeLine(consoleArea,e.getMessage());
         }
-    }
-    private void selectInput(){
-        ArrayList<Node> needToHide = createHideArr();
-        Choice.hideInterfaces(needToHide);
-        Choice.select(table);
-        selectInputMethod((Button) table.getChildren().get(0),(Button) table.getChildren().get(1));
-    }
-    private void selectInputMethod(Button setManual, Button setFromFile){
-        setManual.setOnAction(event -> {
-            TableOperator.clearTable(table);
-            nValue.setVisible(true);
-            matrixIn.setVisible(true);
-            consoleArea.setVisible(true);
-            receiver.setVisible(true);
-            changeIn.setVisible(true);
-        });
-        setFromFile.setOnAction(event -> {
-            TableOperator.clearTable(table);
-            fileAddress.setVisible(true);
-            consoleArea.setVisible(true);
-            receiver.setVisible(true);
-            changeIn.setVisible(true);
-            matrixIn.setVisible(true);
-        });
     }
     private void readSize(){
         try {
             int a=InputTextFields.getIntFromTextField(nValue);
             if(a>0&&a<21) {
                 size.set(a);
-                TableOperator.createTable(table,size.get());
             }
             else {
                 throw new NumberFormatException();
@@ -134,25 +133,5 @@ public class Controller {
                     "Введите число от 1 до 20 включительно \n");
         }
 
-    }
-    private void readAddress(){
-        address = InputTextFields.getStringFromTextField(fileAddress);
-    }
-    private void readMatrix(){
-        try {
-            matrix.set(TableOperator.readTable(table,size.get()));
-        }
-        catch (Exception e){
-            Console.writeLine(consoleArea,e.getMessage()+"\n");
-        }
-    }
-
-    private void writeMatrix(ArrayList<Double> matrix) {
-        try {
-            TableOperator.printTable(matrix,table,size.get());
-        }
-        catch (Exception e){
-            Console.writeLine(consoleArea,e.getMessage()+"\n");
-        }
     }
 }
