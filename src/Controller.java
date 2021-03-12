@@ -56,14 +56,18 @@ public class Controller {
                 nextIter.setOnAction(event1 -> {
                    GridPane gridPane = pane.createNewTable(size.get());
                    req.setPreparedMatrix(matrix.get());
-                   TableOperator.printTable(req.getNextMatrix(),gridPane,size.get());
-
+                   if(req.isEnd()){
+                       writeToConsole(req);
+                   }else {
+                       TableOperator.printTable(req.getNextMatrix(), gridPane, size.get());
+                   }
                 });
             }
             else {
                 req.setPreparedMatrix(matrix.get());
                 GridPane gridPane = pane.createNewTable(size.get());
                 TableOperator.printTable(req.getFinalMatrix(),gridPane,size.get());
+                writeToConsole(req);
             }
         });
     }
@@ -94,6 +98,7 @@ public class Controller {
     }
     private void input(TablesPane pane){
         matrixIn.setOnAction(event -> {
+            pane.deleteAll();
             if(fileAddress.isVisible()){
                 readFromFile();
                 pane.createNewTable(size.get());
@@ -132,6 +137,12 @@ public class Controller {
             Console.writeLine(consoleArea,"Размер введен некорректно\n" +
                     "Введите число от 1 до 20 включительно \n");
         }
+
+    }
+    private void writeToConsole(Requestable req){
+        Console.writeLine(consoleArea,req.getMessage());
+        Console.writeXVector(consoleArea,req.getAnswers());
+        Console.writeRVector(consoleArea,req.getDiscrepancy());
 
     }
 }

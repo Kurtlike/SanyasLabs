@@ -4,14 +4,23 @@ import java.util.Arrays;
 public class Test implements Requestable {
     ArrayList<Double> matrix;
     int size;
+    int iter=0;
     @Override
     public void setSize(int size) {
+        iter=3;
         this.size=size;
     }
 
     @Override
     public void setPreparedMatrix(ArrayList<Double> matrix) {
+
         this.matrix=matrix;
+    }
+
+    @Override
+    public boolean isEnd() {
+        iter--;
+        return iter < 0;
     }
 
     @Override

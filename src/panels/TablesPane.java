@@ -1,8 +1,4 @@
 package panels;
-
-import javafx.scene.Node;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 
@@ -28,7 +24,8 @@ public class TablesPane {
         return table;
     }
     public void deleteAll(){
+        shift=0;
+        tablesPane.getChildren().clear();
         tables.clear();
-        tablesPane.getChildren().removeAll(tables);
     }
 }
